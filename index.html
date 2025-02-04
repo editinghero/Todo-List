@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <style>
+        /* General Styles */
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;700&display=swap');
+
+        body {
+            font-family: 'SF Pro Display', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #ecf0f1;
+            overflow-x: hidden;
+            background: #1c1c1c; /* Blackish-grey background */
+        }
+
+        /* Fixed Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1); /* Translucent background */
+            backdrop-filter: blur(10px); /* Blur effect */
+            border-radius: 0 0 15px 15px; /* Rounded bottom corners */
+            z-index: 1000;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ecf0f1;
+        }
+
+        .header-buttons button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .header-buttons button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Todo List Container */
+        .todo-container {
+            margin-top: 100px; /* Adjusted to avoid overlap with header */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .todo-input {
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            align-items: flex-start; /* Align items to the left */
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .todo-input input[type="text"] {
+            width: 100%; /* Full width */
+            min-height: 40px; /* Minimum height */
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            margin-bottom: 10px; /* Space between inputs */
+            resize: vertical; /* Allow vertical resizing */
+            overflow-wrap: break-word; /* Wrap long words */
+            transition: background 0.3s ease;
+        }
+
+        .todo-input input[type="text"]::placeholder {
+            color: #bdc3c7;
+        }
+
+        .todo-input input[type="text"]:focus {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .time-input-container {
+            display: flex;
+            align-items: center;
+            width: 100%; /* Full width */
+            margin-bottom: 10px; /* Space between inputs */
+        }
+
+        .time-input {
+            flex: 1; /* Take up available space */
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            margin-right: 10px; /* Space between time input and button */
+            transition: background 0.3s ease;
+        }
+
+        .time-input::placeholder {
+            color: #bdc3c7;
+        }
+
+        .time-input:focus {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .time-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 8px; /* Smaller padding for "Time" button */
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .time-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .todo-input button {
+            width: 100%; /* Full width */
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .todo-input button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Todo List */
+        .todo-list {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .todo-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column; /* Stack content vertically */
+            align-items: flex-start; /* Align items to the left */
+            word-wrap: break-word; /* Break long words */
+        }
+
+        .todo-item.completed {
+            text-decoration: line-through;
+            color: #bdc3c7;
+        }
+
+        .todo-item span {
+            word-wrap: break-word; /* Break long words */
+            margin-bottom: 5px; /* Space between text and buttons */
+            max-width: 100%; /* Prevent horizontal overflow */
+        }
+
+        .todo-item div {
+            display: flex;
+            gap: 5px; /* Space between buttons */
+        }
+
+        .todo-item button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .todo-item button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Fixed Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1); /* Translucent background */
+            backdrop-filter: blur(10px); /* Blur effect */
+            
+            z-index: 1000;
+            padding: 10px 9px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 400;
+            color: #ecf0f1;
+        }
+
+        /* Share Popup */
+        .share-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .share-popup input {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            width: 100%;
+        }
+
+        .share-popup button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .share-popup button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Password Verification Popup */
+        .password-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .password-popup input {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            width: 100%;
+        }
+
+        .password-popup button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .password-popup button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fixed Header -->
+    <header>
+        <h1>Todo List</h1>
+        <div class="header-buttons">
+            <button id="save-btn">Save</button>
+            <button id="upload-btn">Upload</button>
+            <button id="share-btn">Share</button>
+        </div>
+    </header>
+
+    <!-- Todo List Container -->
+    <div class="todo-container">
+        <div class="todo-input">
+            <input type="text" id="todo-input" placeholder="Add a new task...">
+            <div class="time-input-container">
+                <input type="time" id="time-input" class="time-input" placeholder="Time" style="display: none;">
+                <button class="time-button" id="time-button">Time</button>
+            </div>
+            <button id="add-btn">Add</button>
+        </div>
+        <ul class="todo-list" id="todo-list"></ul>
+    </div>
+
+    <!-- Fixed Footer -->
+    <footer>
+        Astral Quarks
+    </footer>
+
+    <!-- Share Popup -->
+    <div class="share-popup" id="share-popup">
+        <h3>Set Password for Shared Link</h3>
+        <input type="password" id="share-password" placeholder="Enter password">
+        <button id="share-confirm-btn">Confirm</button>
+        <button id="share-cancel-btn">Cancel</button>
+    </div>
+
+    <!-- Password Verification Popup -->
+    <div class="password-popup" id="password-popup">
+        <h3>Enter Password</h3>
+        <input type="password" id="password-input" placeholder="Enter password">
+        <button id="password-confirm-btn">Confirm</button>
+    </div>
+
+    <script>
+        let todos = [];
+
+        // Simple XOR-based encryption/decryption function
+        function xorEncryptDecrypt(input, key) {
+            let output = '';
+            for (let i = 0; i < input.length; i++) {
+                output += String.fromCharCode(input.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return output;
+        }
+
+        // Load todos from localStorage on page load
+        window.addEventListener('load', () => {
+            const savedTodos = localStorage.getItem('todos');
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+                renderTodos();
+            }
+
+            // Check for shared todo list in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const encryptedTodos = urlParams.get('todos');
+            const encryptedPassword = urlParams.get('password');
+
+            if (encryptedTodos && encryptedPassword) {
+                const passwordPopup = document.getElementById('password-popup');
+                passwordPopup.style.display = 'flex';
+
+                document.getElementById('password-confirm-btn').addEventListener('click', () => {
+                    const enteredPassword = document.getElementById('password-input').value.trim();
+                    try {
+                        const decryptedPassword = xorEncryptDecrypt(decodeURIComponent(encryptedPassword), 'secretKey'); // Decrypt password
+                        if (enteredPassword === decryptedPassword) {
+                            const decryptedTodos = JSON.parse(xorEncryptDecrypt(decodeURIComponent(encryptedTodos), 'secretKey')); // Decrypt todos
+                            todos = decryptedTodos;
+                            renderTodos();
+                            passwordPopup.style.display = 'none';
+                        } else {
+                            alert('Incorrect password!');
+                        }
+                    } catch (error) {
+                        alert('Invalid shared todo list');
+                    }
+                });
+            }
+        });
+
+        // Add a new todo item
+        document.getElementById('add-btn').addEventListener('click', () => {
+            const input = document.getElementById('todo-input');
+            const timeInput = document.getElementById('time-input');
+            const value = input.value.trim();
+            const time = timeInput.value;
+
+            if (value) {
+                todos.push({ text: value, time: time || 'No time set', completed: false });
+                saveTodosToLocalStorage();
+                renderTodos();
+                input.value = '';
+                timeInput.value = '';
+                timeInput.style.display = 'none'; // Hide time input after adding
+            }
+        });
+
+        // Render todos to the DOM
+        function renderTodos() {
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <span>${todo.text} <small>(${todo.time})</small></span>
+                    <div>
+                        <button onclick="toggleComplete(${index})">Done</button>
+                        <button onclick="deleteTodo(${index})">Delete</button>
+                    </div>
+                `;
+                todoList.appendChild(li);
+            });
+        }
+
+        // Toggle completion status of a todo
+        function toggleComplete(index) {
+            todos[index].completed = !todos[index].completed;
+            saveTodosToLocalStorage();
+            renderTodos();
+        }
+
+        // Delete a todo
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            saveTodosToLocalStorage();
+            renderTodos();
+        }
+
+        // Save todos to localStorage
+        function saveTodosToLocalStorage() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        // Save todos to a JSON file
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(todos)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'todos.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Upload and load todos from a JSON file
+        document.getElementById('upload-btn').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        todos = JSON.parse(e.target.result);
+                        saveTodosToLocalStorage();
+                        renderTodos();
+                    } catch (error) {
+                        alert('Invalid JSON file');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        });
+
+        // Open Time Input When "Time" Button is Clicked
+        document.getElementById('time-button').addEventListener('click', () => {
+            const timeInput = document.getElementById('time-input');
+            timeInput.style.display = 'block';
+            timeInput.focus();
+        });
+
+        // Share Todo List with Password Protection
+        document.getElementById('share-btn').addEventListener('click', () => {
+            const sharePopup = document.getElementById('share-popup');
+            sharePopup.style.display = 'flex';
+        });
+
+        document.getElementById('share-cancel-btn').addEventListener('click', () => {
+            const sharePopup = document.getElementById('share-popup');
+            sharePopup.style.display = 'none';
+        });
+
+        document.getElementById('share-confirm-btn').addEventListener('click', () => {
+            const passwordInput = document.getElementById('share-password');
+            const password = passwordInput.value.trim();
+
+            if (password) {
+                const encryptedTodos = encodeURIComponent(xorEncryptDecrypt(JSON.stringify(todos), 'secretKey'));
+                const encryptedPassword = encodeURIComponent(xorEncryptDecrypt(password, 'secretKey'));
+
+                const shareUrl = `${window.location.origin}${window.location.pathname}?todos=${encryptedTodos}&password=${encryptedPassword}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('Shareable link copied to clipboard!');
+                }).catch(err => {
+                    alert('Failed to copy link. Please try again.');
+                });
+
+                passwordInput.value = '';
+                const sharePopup = document.getElementById('share-popup');
+                sharePopup.style.display = 'none';
+            } else {
+                alert('Please enter a password!');
+            }
+        });
+    </script>
+
+</body>
+</html>
